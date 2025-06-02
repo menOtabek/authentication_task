@@ -17,7 +17,6 @@ class User(AbstractUser):
         BLOCKED = 'blocked', _('blocked')
 
     email = None
-    username = None
     phone_number = models.CharField(max_length=13, validators=[validate_uzbek_phone_number],
                                     verbose_name=_("phone number"), unique=True)
     role = models.CharField(max_length=10, choices=UserRole.choices, verbose_name=_('role'),
@@ -29,7 +28,6 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
 
     objects = UserManager()
-    USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
 
     class Meta:
@@ -55,3 +53,15 @@ class Otp(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.otp_code}"
+
+
+class LocActivity(models.Model):
+    class ActivityType(models.TextChoices):
+        LOGIN = 'login', _('login')
+        LOGOUT = 'logout', _('logout')
+        PASSWORD = 'password', _('password')
+        REFRESH = 'refresh', _('refresh')
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_('user'), )
+    activity = models.CharField(max_length=10, choices=ActivityType.choices, verbose_name=_('activity type'),)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
