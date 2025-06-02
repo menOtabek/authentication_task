@@ -13,9 +13,8 @@ class RefreshTokenSerializer(serializers.Serializer):
         except Exception as e:
             token.blacklist()
             raise serializers.ValidationError(str(e))
-        if token.get('exp') < timezone.now().timestamp():
-            token.blacklist()
-            raise serializers.ValidationError(_('Refresh token is expired'))
+        if token.get('exp') and token.get('exp') < timezone.now().timestamp():
+            raise serializers.ValidationError('Refresh token is expired')
         return data
 
 

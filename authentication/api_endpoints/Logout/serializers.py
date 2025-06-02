@@ -14,5 +14,4 @@ class LogoutSerializer(serializers.Serializer):
             token = RefreshToken(self.token)
             token.blacklist()
         except Exception as e:
-            print('u ' * 40)
             raise serializers.ValidationError(str(e))

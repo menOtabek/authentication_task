@@ -21,7 +21,10 @@ class RefreshTokenView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            refresh = RefreshToken(serializer.validated_data.get('refresh_token'))
+            refresh.blacklist()
+            raise ValidationError(serializer.errors, status.HTTP_400_BAD_REQUEST)
         refresh = RefreshToken(serializer.validated_data.get('refresh_token'))
         user_id = refresh.payload.get('user_id')
         user = User.objects.filter(id=user_id).first()
@@ -30,5 +33,5 @@ class RefreshTokenView(generics.GenericAPIView):
         new_refresh_token = RefreshToken.for_user(user)
         new_access_token = new_refresh_token.access_token
         LocActivity.objects.create(user=user, activity=LocActivity.ActivityType.REFRESH)
-        return Response({'access_token': new_access_token, 'refresh_token': new_refresh_token},
+        return Response({'access_token': str(new_access_token), 'refresh_token': str(new_refresh_token)},
                         status=status.HTTP_200_OK)
